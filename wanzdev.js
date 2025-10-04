@@ -1,4 +1,4 @@
-// Konfigurasi global — edit domain & port sesuai panel Pterodactyl lo
+// Konfigurasi global — sesuaikan domain & port dengan panel Pterodactyl lo
 window.WANZ_CONFIG = {
   domain: "http://oktb.publik-panel.my.id",
   port: "22271",
@@ -7,6 +7,7 @@ window.WANZ_CONFIG = {
 (function (global) {
   const BASE = `${WANZ_CONFIG.domain}:${WANZ_CONFIG.port}`;
 
+  // helper untuk call API dengan error logging
   async function apiFetch(path, opts = {}) {
     const url = BASE + path;
     const headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
@@ -19,11 +20,13 @@ window.WANZ_CONFIG = {
       const txt = await res.text();
       try {
         return JSON.parse(txt);
-      } catch {
+      } catch (e) {
+        console.warn("⚠️ Respon bukan JSON valid:", txt);
         return { success: false, error: "invalid_json", raw: txt };
       }
     } catch (e) {
-      return { success: false, error: e.message || "fetch_failed" };
+      console.error("💥 [FETCH ERROR]", e);
+      return { success: false, message: e.message || "fetch_failed" };
     }
   }
 
@@ -43,5 +46,9 @@ window.WANZ_CONFIG = {
     return await apiFetch("/send", { method: "POST", body: { name, to, text } });
   }
 
-  global.Wanzdev = { connect, disconnect, getStatus, sendMessage };
+  async function listSessions() {
+    return await apiFetch("/sessions");
+  }
+
+  global.Wanzdev = { connect, disconnect, getStatus, sendMessage, listSessions };
 })(window);
