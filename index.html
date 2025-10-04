@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wanz WA Connect Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<script src="wanzdev.js"></script>
+<style>
+  body {
+    margin: 0;
+    background: #010307;
+    color: #c7fff1;
+    font-family: 'Orbitron', monospace;
+    overflow-x: hidden;
+  }
+  .wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    position: relative;
+    text-align: center;
+  }
+  .lightning {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 20%, rgba(0,255,156,0.15), transparent 20%),
+                radial-gradient(circle at 70% 80%, rgba(0,167,255,0.15), transparent 20%);
+    filter: blur(60px);
+    animation: flicker 3s infinite;
+  }
+  @keyframes flicker { 0%,100%{opacity:.05;} 50%{opacity:.2;} }
+
+  .card {
+    width: 90%;
+    max-width: 700px;
+    background: rgba(5,15,15,0.9);
+    border: 1px solid rgba(0,255,156,0.2);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 0 50px rgba(0,255,156,0.2);
+    z-index: 2;
+  }
+
+  h1 {
+    color: #00ff9c;
+    text-shadow: 0 0 10px rgba(0,255,156,0.5);
+    margin: 0 0 8px;
+  }
+
+  .muted { color: #7fb0a6; font-size: 13px; }
+  label { display: block; margin-top: 10px; font-size: 13px; color: #7fb0a6; text-align: left; }
+  input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 4px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: transparent;
+    color: #e6fff6;
+    font-family: monospace;
+  }
+  textarea { min-height: 100px; resize: none; }
+
+  .btn {
+    display: inline-block;
+    padding: 10px 16px;
+    margin-top: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: transform 0.2s;
+  }
+  .btn-primary {
+    background: linear-gradient(90deg,#00ff9c,#00a8ff);
+    color: #021711;
+    box-shadow: 0 0 20px rgba(0,255,156,0.3);
+  }
+  .btn-primary:hover { transform: scale(1.05); }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #7fb0a6;
+  }
+
+  .pill {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(0,255,156,0.08);
+    font-weight: 700;
+    color: #00ff9c;
+  }
+
+  .code {
+    background: #001914;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    font-size: 18px;
+    letter-spacing: 3px;
+    text-align: center;
+    color: #00ff9c;
+    border: 1px dashed #00ff9c;
+  }
+
+  .log {
+    margin-top: 12px;
+    background: rgba(255,255,255,0.05);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    min-height: 80px;
+    overflow: auto;
+    max-height: 200px;
+    text-align: left;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  .overlay.show { display: flex; }
+  .modal {
+    background: #041214;
+    padding: 20px;
+    border-radius: 12px;
+    max-width: 420px;
+    width: 90%;
+    border: 1px solid rgba(0,255,156,0.3);
+    box-shadow: 0 0 40px rgba(0,255,156,0.3);
+  }
+  .modal h3 { margin: 0; color: #00ff9c; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="lightning"></div>
+  <div class="card">
+    <h1>XCVI SIMILARITY</h1>
+    <p class="muted">
+      Domain & Port diset di <code>wanzdev.js</code><br>
+      Domain: <b id="domainShow"></b> | Port: <b id="portShow"></b>
+    </p>
+
+    <div id="serverStatus" class="pill">Server: mengecek...</div>
+
+    <label>Nama Session</label>
+    <input id="nameInput" placeholder="contoh: wanz">
+
+    <label>Nomor (format internasional tanpa +)</label>
+    <input id="phoneInput" placeholder="628xxxxxx">
+
+    <button class="btn btn-primary" id="btnConnect">Connect</button>
+    <button class="btn btn-ghost" id="btnDisconnect" style="display:none">Disconnect</button>
+
+    <div class="pill" id="statusPill">Status: idle</div>
+    <div id="pairingCode" class="code">—</div>
+
+    <hr style="margin:20px 0;border:none;border-top:1px solid rgba(255,255,255,0.1)">
+
+    <label>Nomor Tujuan</label>
+    <input id="sendTo" placeholder="628xxxxxx">
+    <label>Pesan</label>
+    <textarea id="sendText" placeholder="Halo dari panel..."></textarea>
+    <button class="btn btn-primary" id="btnSend">Kirim Pesan</button>
+    <button class="btn btn-ghost" id="btnSessions">Lihat Sessions</button>
+
+    <div class="log" id="logBox">[Log siap...]</div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">Info</h3>
+    <div id="modalBody" style="margin-top:10px"></div>
+    <div style="margin-top:10px;text-align:right">
+      <button class="btn btn-primary" id="modalClose">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = s=>document.querySelector(s);
+$('#domainShow').textContent = WANZ_CONFIG.domain || '-';
+$('#portShow').textContent = WANZ_CONFIG.port || '-';
+
+// Cek status server
+function updateServerStatus() {
+  const pill = $('#serverStatus');
+  if (!WANZ_CONFIG.domain || !WANZ_CONFIG.port) {
+    pill.textContent = 'Server: tidak terhubung';
+    pill.style.background = 'rgba(255,50,50,0.1)';
+    pill.style.color = '#ff5050';
+  } else {
+    pill.textContent = 'Server: terhubung';
+    pill.style.background = 'rgba(0,255,156,0.1)';
+    pill.style.color = '#00ff9c';
+  }
+}
+updateServerStatus();
+
+function log(msg){
+  const t = new Date().toLocaleTimeString();
+  $('#logBox').innerHTML = `[${t}] ${msg}<br>` + $('#logBox').innerHTML;
+}
+function showModal(title,body){
+  $('#modalTitle').textContent=title;
+  $('#modalBody').innerHTML=body;
+  $('#overlay').classList.add('show');
+}
+$('#modalClose').onclick=()=>$('#overlay').classList.remove('show');
+
+let connectedName = null;
+
+// === CONNECT ===
+$('#btnConnect').onclick = async () => {
+  const name = $('#nameInput').value.trim();
+  const phone = $('#phoneInput').value.trim();
+  if (!name || !phone) return showModal('Error','Isi nama & nomor dulu.');
+
+  log('Menghubungkan ke server...');
+  const res = await Wanzdev.connect(name, phone);
+
+  if (res && res.pairing_code) {
+    connectedName = name;
+    $('#statusPill').textContent = 'Status: Menunggu pairing...';
+    $('#pairingCode').textContent = res.pairing_code;
+    $('#btnConnect').style.display = 'none';
+    $('#btnDisconnect').style.display = 'inline-block';
+    showModal('Pairing Code', `<div class='code'>${res.pairing_code}</div>Gunakan kode ini di WhatsApp dalam 1 menit.`);
+  } else {
+    showModal('Gagal', res?.message || res?.detail || 'Koneksi gagal.');
+  }
+};
+
+// === DISCONNECT ===
+$('#btnDisconnect').onclick = async () => {
+  if (!connectedName) return showModal('Error','Belum ada session aktif.');
+  const res = await Wanzdev.disconnect(connectedName);
+  if (res && res.success) {
+    log(`Session ${connectedName} dihapus.`);
+    $('#statusPill').textContent = 'Status: idle';
+    $('#pairingCode').textContent = '—';
+    $('#btnDisconnect').style.display = 'none';
+    $('#btnConnect').style.display = 'inline-block';
+    connectedName = null;
+    showModal('Berhasil','Session dihapus permanen.');
+  } else {
+    showModal('Gagal', res?.message || 'Gagal menghapus session.');
+  }
+};
+
+// === SEND MESSAGE ===
+$('#btnSend').onclick = async () => {
+  if (!connectedName) return showModal('Error','Connect dulu.');
+  const to = $('#sendTo').value.trim();
+  const text = $('#sendText').value.trim();
+  if (!to || !text) return showModal('Error','Isi nomor & pesan.');
+  const res = await Wanzdev.sendMessage(connectedName, to, text);
+  if (res && res.success) {
+    log(`Pesan terkirim ke ${to}`);
+    showModal('Terkirim','Pesan berhasil dikirim.');
+  } else {
+    showModal('Gagal', res?.message || 'Gagal kirim pesan.');
+  }
+};
+
+// === LIST SESSIONS ===
+$('#btnSessions').onclick = async () => {
+  const res = await Wanzdev.listSessions();
+  if (res && res.success) {
+    const list = (res.sessions || []).map(s => `<li>${s}</li>`).join('') || '<i>Kosong</i>';
+    showModal('Daftar Sessions', `<ul>${list}</ul>`);
+  } else {
+    showModal('Error', res?.message || 'Gagal ambil data sessions.');
+  }
+};
+</script>
+</body>
+</html>
