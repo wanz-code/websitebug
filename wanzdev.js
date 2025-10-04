@@ -3,7 +3,7 @@
 // =========================
 
 const WANZ_CONFIG = {
-  domain: "http://oktb.publik-panel.my.id", // ganti ke domain panel Pterodactyl lo
+  domain: "https://oktb.publik-panel.my.id", // ganti ke domain panel Pterodactyl lo
   port: "22271",                            // port bot.js lo
 };
 
