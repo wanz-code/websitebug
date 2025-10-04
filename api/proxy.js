@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
   try {
-    const target = `http://oktb.publik-panel.my.id:22271${req.url.replace(/^\/api\/proxy/, '')}`;
+    const target = `http://oktb.publik-panel.my.id${req.url.replace(/^\/api\/proxy/, '')}`;
     const response = await fetch(target, {
       method: req.method,
       headers: { 'Content-Type': 'application/json' },
