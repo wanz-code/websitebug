@@ -4,7 +4,7 @@
 
 const WANZ_CONFIG = {
   domain: "/api/proxy", // ganti ke domain panel Pterodactyl lo
-  port: "22271",                            // port bot.js lo
+  port: "",                            // port bot.js lo
 };
 
 // =========================
